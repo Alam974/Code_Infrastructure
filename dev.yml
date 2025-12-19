@@ -1,0 +1,90 @@
+trigger: none
+pool: alampool
+
+stages:
+  - stage: precommit
+    jobs: 
+      - job: terraforminit
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.14.3'
+        
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+            backendServiceArm: 'infra_code_serviceConnection'
+            backendAzureRmStorageAccountName: 'alamstorag123'
+            backendAzureRmContainerName: 'alamcontainer'
+            backendAzureRmKey: 'dev.terraform.tfstate'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'validate'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'custom'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+            outputTo: 'console'
+            customCommand: 'fmt'
+            environmentServiceNameAzureRM: 'infra_code_serviceConnection'
+
+    
+  - stage: plan
+    jobs:
+      - job: terraformplan
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.14.3'
+        
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+            backendServiceArm: 'infra_code_serviceConnection'
+            backendAzureRmStorageAccountName: 'alamstorag123'
+            backendAzureRmContainerName: 'alamcontainer'
+            backendAzureRmKey: 'dev.terraform.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+            environmentServiceNameAzureRM: 'infra_code_serviceConnection'
+
+  - stage: apply
+    jobs:
+      - job: terraformapply
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: '1.14.3'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+            backendServiceArm: 'infra_code_serviceConnection'
+            backendAzureRmStorageAccountName: 'alamstorag123'
+            backendAzureRmContainerName: 'alamcontainer'
+            backendAzureRmKey: 'dev.terraform.tfstate'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+            environmentServiceNameAzureRM: 'infra_code_serviceConnection'
+
+
+
